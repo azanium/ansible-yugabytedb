@@ -1,0 +1,8 @@
+---
+  - name: Remove YugabyteDB
+    hosts: digitalocean
+    become: true
+    roles: 
+    - yuga-remove
+    vars:
+      install_version: 2.3.0.0

@@ -1,0 +1,15 @@
+--tserver_master_addrs={{ ansible_play_hosts_all | join(',') }}
+--rpc_bind_addresses={{ ansible_eth0.ipv4.address }}:9200
+--start_pgsql_proxy
+--pgsql_proxy_bind_address={{ ansible_eth0.ipv4.address }}:5433
+--cql_proxy_bind_address={{ ansible_eth0.ipv4.address }}:9042
+--fs_data_dirs=/data/yugadb/data
+--placement_cloud=aliyun
+--placement_region=ap-southeast-1
+--placement_zone=ap-southeast-1a
+--use_private_ip=cloud
+--webserver_interface={{ ansible_eth0.ipv4.address }}
+--max_log_size=1000
+--stop_logging_if_full_disk=true
+--rlimit_nofile=1000000
+--ysql_num_shards_per_tserver={{ shards_per_tserver }}

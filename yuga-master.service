@@ -1,0 +1,20 @@
+[Unit]
+Description=YugaByteDB Master Service
+After=network.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+ExecStart=/var/lib/yugadb/2.2.2.0/bin/yb-master --flagfile /var/lib/yugadb/2.2.2.0/conf/master.conf
+ExecReload=/bin/kill -SIGHUP $MAINPID
+LimitCORE=infinity
+LimitNOFILE=230000 
+LimitNPROC=12000
+MemoryLimit=3072M
+TimeoutStopSec=60
+RestartForceExitStatus=SIGPIPE
+RestartSec=5
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

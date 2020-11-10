@@ -1,0 +1,10 @@
+--master_addresses={{ ansible_play_hosts_all | join(',') }}
+--rpc_bind_addresses={{ ansible_eth0.ipv4.address }}:7100
+--fs_data_dirs=/data/yugadb/data
+--placement_cloud=aliyun
+--placement_region=ap-southeast-1
+--placement_zone=ap-southeast-1a
+--leader_failure_max_missed_heartbeat_periods=10
+--use_private_ip=cloud
+--webserver_interface={{ ansible_eth0.ipv4.address }}
+--max_log_size=1000

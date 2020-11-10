@@ -1,0 +1,23 @@
+---
+  - name: Install YugabyteDB
+    hosts: digitalocean
+    become: true
+    roles: 
+      - yuga-install  # download + extract
+      - yuga-master # run server
+      - yuga-tserver #run tserver
+    vars:
+      install_version: 2.3.2.0
+      shards_per_tserver: 4
+      yuga_user: yuga
+      yuga_group: yuga
+
+  # - name: Run Master Server
+  #   hosts: master
+  #   become: true
+  #   roles:
+  #     - yuga-master # run server
+  #   vars:
+  #     install_version: 2.3.0.0
+  #     yuga_user: yuga
+  #     yuga_group: yuga

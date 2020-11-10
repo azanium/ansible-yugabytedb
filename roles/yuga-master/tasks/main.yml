@@ -1,0 +1,28 @@
+# - name: Kill Current Master
+#   shell: "pkill yb-master"
+#   become: yes
+#   become_user: "root"
+#   tags: run_server
+
+- name: Setup master config file
+  become: true
+  template: src=master.conf.j2 dest={{ install_location_config_path }}/master.conf owner={{ yuga_user }} group={{ yuga_group }} mode=644 backup=true
+  tags: conf_file
+
+- name: Configure yuga-master systemd service
+  become: true
+  template: src=yuga-master.service.j2 dest={{ systemd_config_path }} owner={{ yuga_user }} group={{ yuga_group }} mode=644 backup=true
+  register: systemd_config
+  tags: systemd_config,change_systemd
+
+- name: Register yuga-master systemd service
+  become: true
+  become_user: root
+  systemd: name={{ systemd_config_service }} daemon_reload=yes enabled=yes
+  tags: systemd_config,change_systemd
+
+- name: Start yb-master node with systemd
+  become: true
+  # become_user: "{{ cockroach_user }}"
+  systemd: name={{ systemd_config_service }} state=started
+  tags: start_cluster_for_systemd,systemd_config, systemd_start

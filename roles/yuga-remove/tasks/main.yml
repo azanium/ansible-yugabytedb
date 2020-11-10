@@ -1,0 +1,30 @@
+---
+- name: remove installation files
+  file: path="/tmp/{{ yuga_binaries.filename }}" state=absent
+  when: remove_install_binaries
+  tags: remove_install_binaries,remove_cluster
+
+- name: Kill all service
+  script: kill-all-yuga.sh
+  tags: remove_cluster
+  ignore_errors: true
+
+- name: Remove install/log directories
+  file: name={{ item }} state=absent
+  with_items:
+      - "{{ log_dir }}"
+      - "{{ install_location }}"
+      - "{{ install_location_config_path }}"
+
+- name: Remove datastore
+  file: name={{ item }} state=absent
+  with_items:
+      - "{{ datastore }}"
+
+- name: Remove yuga user
+  user: name="{{ yuga_user }}" state=absent
+  tags: remove_user
+
+- name: Remove yuga group
+  group: name="{{ yuga_group }}" state=absent
+  tags: remove_user

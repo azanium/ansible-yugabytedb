@@ -1,0 +1,152 @@
+---
+# tasks for ulimit
+- name: core (unlimited)
+  pam_limits: 
+    domain: root
+    limit_type: '-'
+    limit_item: core
+    value: unlimited
+- name: data (unlimited)
+  pam_limits: 
+    domain: root
+    limit_type: '-'
+    limit_item: data
+    value: unlimited
+- name: fsize (unlimited)
+  pam_limits: 
+    domain: root
+    limit_type: '-'
+    limit_item: fsize
+    value: unlimited
+- name: sigpending (119934)
+  pam_limits: 
+    domain: root
+    limit_type: '-'
+    limit_item: sigpending
+    value: 119934
+- name: memlock (64)
+  pam_limits: 
+    domain: root
+    limit_type: '-'
+    limit_item: memlock
+    value: 64
+- name: rss (unlimited)
+  pam_limits: 
+    domain: root
+    limit_type: '-'
+    limit_item: rss
+    value: unlimited
+- name: nofile (1048576)
+  pam_limits: 
+    domain: root
+    limit_type: '-'
+    limit_item: nofile
+    value: 1048576
+- name: msgqueue (819200)
+  pam_limits: 
+    domain: root
+    limit_type: '-'
+    limit_item: msgqueue
+    value: 819200
+- name: stack (8192)
+  pam_limits: 
+    domain: root
+    limit_type: '-'
+    limit_item: stack
+    value: 8192
+- name: cpu (unlimited)
+  pam_limits: 
+    domain: root
+    limit_type: '-'
+    limit_item: cpu
+    value: unlimited
+- name: nproc (12000)
+  pam_limits: 
+    domain: root
+    limit_type: '-'
+    limit_item: nproc
+    value: 12000
+- name: locks (unlimited)
+  pam_limits: 
+    domain: root
+    limit_type: '-'
+    limit_item: locks
+    value: unlimited
+    
+# tasks file for yuga
+- name: Create Yuga group
+  group: name="{{ yuga_group }}" state=present
+
+- name: Create Yuga user
+  user: name="{{ yuga_user }}" shell=/bin/bash group="{{ yuga_group }}" state=present
+
+- name: Create directories
+  file: path={{ item }} state=directory owner={{ yuga_user }} group={{ yuga_group }} mode=774
+  with_items:
+    - "{{ install_location_base }}"
+    - "{{ install_location_config_path }}"
+    - "{{ datastore_basedir }}"
+    - "{{ install_stage }}"
+    - "{{ datastore }}"
+    - "{{ log_dir }}"
+  tags: hostfs
+
+- name: Create installation directory
+  file: name={{ install_location }} state=directory owner={{ yuga_user }} group={{ yuga_group }}
+  tags: directories
+
+- name: Get installation files
+  get_url: url="{{ binary_url }}/{{ yuga_binaries.filename }}" dest="{{ install_stage }}/{{ yuga_binaries.filename }}" validate_certs=false
+  when: download_binaries
+  tags: download
+
+- name: Unpack/install binaries
+  unarchive: src="{{ install_stage }}/{{ yuga_binaries.filename }}" dest={{ install_location }} extra_opts="--strip-components=1" copy=no owner={{ yuga_user }} group={{ yuga_group }}
+  # command: "tar xvfz {{ install_stage }}/{{ yuga_binaries.filename }}"
+  # become: yes
+  # become_user: "root"
+  # args:
+  #   chdir: "{{ install_location_base }}"
+  # unarchive: 
+  #   src: "{{ install_stage }}/{{ yuga_binaries.filename }}"
+  #   dest: "{{ install_location }}" 
+  #   extra_opts:
+  #     - --strip-components=1
+  #     - -xvfz
+  #   owner: "{{ yuga_user }}" 
+  #   group: "{{ yuga_group }}"
+  #   copy: no
+  #   remote_src: yes
+  #   validate_certs: no
+  tags: install,unpack
+
+# - name: create symlink to /usr/local/bin
+#   become: true
+#   become_user: root # optional
+#   file: src={{ install_location }}/cockroach dest=/usr/local/bin/yugadb state=link owner={{ yuga_user }}
+#   tags: link
+
+- name: Change the working directory to {{ install_location }} and run ./bin/post_install.sh as db_owner
+  command: ./bin/post_install.sh {{ yuga_user }} {{ yuga_group }}
+  become: yes
+  become_user: "{{ yuga_user }}"
+  args:
+    chdir: "{{ install_location }}"
+  tags: post_install
+
+# - name: test the installation
+#   shell: "{{ install_location }}/bin/yugabyted status"
+#   register: dbversion
+#   tags: test_install
+
+# - name: print output
+#   debug: var=dbversion.stdout_lines
+#   tags: test_install
+
+# - name: Add dotprofile
+#   template: src=dotprofile.j2 dest="/home/{{ yuga_user }}/.profile_cockroach" backup=true
+#   tags: install,dotprofile
+
+# - name: Make sure profile is loaded
+#   lineinfile: dest="/home/{{ yuga_user}}/.bash_profile" line="source /home/{{ yuga_user}}/.profile_cockroach" state=present backup=yes
+#   tags: install,dotprofile

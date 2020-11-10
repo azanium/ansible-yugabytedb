@@ -1,0 +1,6 @@
+---
+- name: Restart dnsmasq service
+  service:
+    name: dnsmasq
+    state: restarted
+  listen: 'restart dnsmasq'

@@ -1,0 +1,24 @@
+---
+# defaults file for yugabytedb
+# yuga configuration
+binary_url: https://downloads.yugabyte.com
+install_version: 2.2.2.0
+remove_cluster: false
+remove_install_binaries: false
+remove_symlink: false
+configure_host_disks: false
+yuga_user: yuga
+yuga_group: yuga
+yuga_binaries:
+  unpacked_version: "yugabyte-{{ install_version }}"
+  filename: "yugabyte-{{ install_version }}-linux.tar.gz"
+download_binaries: true
+
+# file location directory
+install_location_base: /var/lib/yugadb
+install_location: "{{ install_location_base }}/{{ install_version }}"
+install_location_config_path: "{{ install_location }}/conf"
+install_stage: /tmp/yugadb
+datastore_basedir: /data/yugadb
+datastore: "{{ datastore_basedir }}/data"
+log_dir: "{{ datastore_basedir }}/log"

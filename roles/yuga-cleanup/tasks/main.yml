@@ -1,0 +1,50 @@
+- name: Kill Current Tserver
+  shell: "pkill yb-master"
+  become: yes
+  become_user: "root"
+  ignore_errors: true
+
+- name: Kill Current Tserver
+  shell: "pkill yb-tserver"
+  become: yes
+  become_user: "root"
+  ignore_errors: true
+
+- name: Stop yb-master node with systemd
+  become: true
+  systemd: name=yuga-master state=stopped
+  ignore_errors: true
+
+- name: Stop yb-tserver node with systemd
+  become: true
+  systemd: name=yuga-tserver state=stopped
+  ignore_errors: true
+
+- name: Cleanup data directory
+  become: true
+  shell: "rm -rf /data/yugadb/data/*"
+
+- name: Remove post install flag file
+  become: true
+  shell: "rm -f {{ install_location }}/.post_install.sh.completed"
+
+- name: Change the working directory to {{ install_location }} and run ./bin/post_install.sh as db_owner
+  command: ./bin/post_install.sh {{ yuga_user }} {{ yuga_group }}
+  become: yes
+  become_user: "{{ yuga_user }}"
+  args:
+    chdir: "{{ install_location }}"
+  tags: post_install
+
+- name: Start yb-master node with systemd
+  become: true
+  systemd: name=yuga-master state=started
+
+- name: Sleep for 10 sec
+  wait_for:
+    timeout: 10
+
+- name: Start yb-tserver node with systemd
+  become: true
+  systemd: name=yuga-tserver state=started
+

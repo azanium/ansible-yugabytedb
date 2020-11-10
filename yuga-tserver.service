@@ -1,0 +1,14 @@
+[Unit]
+Description=YugaByteDB TServer Service
+After=network.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+ExecStart=/var/lib/yugadb/2.2.2.0/bin/yb-tserver --flagfile /var/lib/yugadb/2.2.2.0/conf/tserver.conf
+ExecReload=/bin/kill -SIGHUP $MAINPID
+TimeoutStopSec=10
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

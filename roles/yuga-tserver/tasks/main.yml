@@ -1,0 +1,38 @@
+# - name: Kill Current Tserver
+#   shell: "pkill yb-tserver"
+#   become: yes
+#   become_user: "root"
+#   async: 45
+#   poll: 5
+#   tags: run_server
+
+- name: Setup tserver config file
+  become: true
+  template: src=tserver.conf.j2 dest={{ install_location_config_path }}/tserver.conf owner={{ yuga_user }} group={{ yuga_group }} mode=644 backup=true
+  tags: conf_file
+
+- name: Configure yuga-tserver systemd service
+  become: true
+  template: src=yuga-tserver.service.j2 dest={{ systemd_config_path }} owner={{ yuga_user }} group={{ yuga_group }} mode=644 backup=true
+  register: systemd_config
+  tags: systemd_config,change_systemd
+
+- name: Register yuga-tserver systemd service
+  become: true
+  become_user: root
+  systemd: name={{ systemd_config_service }} daemon_reload=yes enabled=yes
+  tags: systemd_config,change_systemd
+
+- name: Start yb-master node with systemd
+  become: true
+  # become_user: "{{ cockroach_user }}"
+  systemd: name={{ systemd_config_service }} state=started
+  tags: start_cluster_for_systemd,systemd_config, systemd_start
+
+# - name: Change the working directory to {{ install_location }} and run start tserver
+#   shell: "nohup {{ install_location }}/bin/yb-tserver --flagfile {{ install_location }}/conf/tserver.conf >> /data/yugadb/log/yb-tserver.out &"
+#   become: yes
+#   become_user: "root"
+#   async: 45
+#   poll: 5
+#   tags: run_server

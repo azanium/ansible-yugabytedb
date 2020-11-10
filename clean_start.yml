@@ -1,0 +1,10 @@
+---
+  - name: Clean Start Yuga
+    hosts: master
+    become: true
+    roles: 
+      - yuga-cleanup
+    vars:
+      install_version: 2.2.2.0
+      yuga_user: yuga
+      yuga_group: yuga
